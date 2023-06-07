@@ -61,6 +61,12 @@ void Error_Handler(void);
 #define LED_GREEN_GPIO_Port GPIOC
 #define SW_Pin GPIO_PIN_0
 #define SW_GPIO_Port GPIOA
+#define MOTOR_CN_DIRN_Pin GPIO_PIN_5
+#define MOTOR_CN_DIRN_GPIO_Port GPIOA
+#define MOTOR_BN_DIRN_Pin GPIO_PIN_6
+#define MOTOR_BN_DIRN_GPIO_Port GPIOA
+#define MOTOR_AN_DIRN_Pin GPIO_PIN_7
+#define MOTOR_AN_DIRN_GPIO_Port GPIOA
 #define MOTOR_C_DIRN_Pin GPIO_PIN_13
 #define MOTOR_C_DIRN_GPIO_Port GPIOB
 #define MOTOR_B_DIRN_Pin GPIO_PIN_14
