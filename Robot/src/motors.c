@@ -43,18 +43,54 @@ void Motors_SetDirection(bool a, bool b, bool c)
 void Motors_SetMotors(float a, float b, float c)
 {
 	Motors_SetDirection(a < 0.0f, b < 0.0f, c < 0.0f);
+
+	// TODO: This should become `Motors_SetSpeed(...), which closed loop controls the speed of each motor
 	Motors_SetDuty(fabs(a), fabs(b), fabs(c));
 }
 
 void Motors_SetMovement(float throttle, float angle, float rotation)
 {
-
+	// TODO: Eventually the control loop that calls this function should be closed loop and should adjust
+	// angle, rotation (maybe throttle???) to achieve the actual desired angle and rotation.
+	// Rotation closed loop using gyro (+ compass to account for drift)
+	// Angle closed loop on... accelerometer?
 #define sqrt_3 1.73205
-	float a = throttle * (sin(angle) + cos (angle) / (2.0f + sqrt_3)) + rotation;
-	float c = - throttle * (sin(angle) - cos (angle) / (2.0f + sqrt_3)) + rotation;
-    float b = a + c - 3*rotation;
 
-    // Scale in case any motor > 1.0
+	float a = (sin(angle) + cos (angle) / (2.0f + sqrt_3));
+	float c = (-1 * sin(angle) + cos (angle) / (2.0f + sqrt_3));
+    float b = a + c;
+
+    // Scale so the max motor is 1.0f, giving you maximum power available in that direction
+    // The apply throttle scaling
+    float max = 1.0f;
+    if (fabs(a) > fabs(b) && fabs(a) > fabs(c))
+    {
+    	max = fabs(a);
+    }
+    else if (fabs(b) > fabs(a) && fabs(b) > fabs(c))
+    {
+    	max = fabs(b);
+    }
+    else
+    {
+    	max = fabs(c);
+    }
+
+    a /= max;
+    b /= max;
+    c /= max;
+
+    // Apply throttle scaling
+    a *= throttle;
+    b *= throttle;
+    c *= throttle;
+
+    // Apply rotation
+    a += rotation;
+    b -= rotation; // Someone wired this motor backwards
+    c += rotation;
+
+    // Scale back down if rotation caused us to exceed max value for any motor
     if (a > 1.0f)
     {
     	a = 1.0f;
@@ -73,6 +109,11 @@ void Motors_SetMovement(float throttle, float angle, float rotation)
     	b /= c;
     	a /= c;
     }
+
+    // TODO: It would require getting used to, but you could limit rotation so that it can only max out one motor
+    // Instead of scaling everything back down
+
+    // This gives priority to translation, rather than rotation
 
     Motors_SetMotors(a, b, c);
 }
